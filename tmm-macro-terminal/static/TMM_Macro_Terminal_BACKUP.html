@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMM Macro Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0B1F33;
+  --navy-2: #0D1E2F;
+  --navy-3: #0F2440;
+  --charcoal: #121212;
+  --panel: rgba(9,20,35,0.85);
+  --panel-2: rgba(11,24,40,0.9);
+  --purple: #7A5CFF;
+  --purple-soft: rgba(122,92,255,0.12);
+  --purple-glow: rgba(122,92,255,0.25);
+  --purple-line: rgba(122,92,255,0.18);
+  --gold: #D4AF37;
+  --gold-soft: rgba(212,175,55,0.12);
+  --gold-line: rgba(212,175,55,0.25);
+  --white: #FFFFFF;
+  --grey: #8A9BB0;
+  --grey-2: #5A6C80;
+  --green: #00B894;
+  --green-soft: rgba(0,184,148,0.12);
+  --red: #FF3B3B;
+  --red-soft: rgba(255,59,59,0.12);
+  --orange: #FF8C32;
+  --mono: 'JetBrains Mono', monospace;
+  --ui: 'Montserrat', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  height:100%;
+  background: var(--navy);
+  color: var(--white);
+  font-family: var(--ui);
+  font-size: 13px;
+  overflow-x: hidden;
+}
+
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(122,92,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122,92,255,0.025) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+body::after {
+  content:'';
+  position:fixed;
+  top:0; left:0; right:0;
+  height:280px;
+  background: radial-gradient(ellipse 70% 200px at 50% 0%, rgba(122,92,255,0.06) 0%, transparent 100%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ====== HEADER ====== */
+.hdr {
+  position:sticky;
+  top:0;
+  z-index:200;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  height:56px;
+  background:rgba(8,18,30,0.96);
+  border-bottom:1px solid var(--purple-line);
+  backdrop-filter:blur(12px);
+}
+
+.hdr-brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.hdr-icon {
+  position:relative;
+  width:38px;
+  height:38px;
+  flex-shrink:0;
+}
+
+.hdr-text { }
+
+.hdr-pillar {
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:3px;
+  color:var(--purple);
+  text-transform:uppercase;
+  line-height:1;
+  margin-bottom:3px;
+}
+
+.hdr-name {
+  font-size:15px;
+  font-weight:800;
+  color:var(--white);
+  letter-spacing:1.5px;
+  line-height:1;
+  text-transform:uppercase;
+}
+
+.hdr-name em {
+  font-style:normal;
+  color:var(--purple);
+}
+
+.hdr-center {
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.session-pill {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:5px 13px;
+  background:var(--green-soft);
+  border:1px solid rgba(0,184,148,0.3);
+  border-radius:4px;
+  font-size:10px;
+  font-weight:700;
+  color:var(--green);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+
+.live-dot {
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--green);
+  flex-shrink:0;
+  animation:livepulse 2s ease-in-out infinite;
+}
+
+@keyframes livepulse {
+  0%,100%{box-shadow:0 0 0 0 rgba(0,184,148,0.5);}
+  50%{box-shadow:0 0 0 5px rgba(0,184,148,0);}
+}
+
+.mkts {
+  display:flex;
+  gap:6px;
+}
+
+.mkt-badge {
+  padding:4px 9px;
+  border-radius:3px;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+.mb-open { background:var(--green-soft); color:var(--green); border:1px solid rgba(0,184,148,0.28); }
+.mb-closed { background:rgba(138,155,176,0.1); color:var(--grey); border:1px solid rgba(138,155,176,0.2); }
+.mb-pre { background:var(--gold-soft); color:var(--gold); border:1px solid var(--gold-line); }
+
+.hdr-right {
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.clock-block {
+  text-align:right;
+}
+
+.clock-row {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-family:var(--mono);
+  font-size:11px;
+}
+
+.clock-zone {
+  color:var(--grey-2);
+  font-size:9px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+.clock-time { color:var(--white); font-weight:500; }
+.clock-time.primary { color:var(--purple); font-weight:600; }
+
+.data-live {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:9px;
+  font-weight:700;
+  color:var(--grey-2);
+  letter-spacing:1.5px;
+}
+
+.blink-dot {
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:var(--green);
+  animation:blink 3s infinite;
+}
+
+@keyframes blink {
+  0%,85%,100%{opacity:1;}
+  90%{opacity:0;}
+}
+
+/* ====== TICKER ====== */
+.ticker-bar {
+  height:32px;
+  background:rgba(8,16,28,0.92);
+  border-bottom:1px solid var(--purple-line);
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  position:sticky;
+  top:56px;
+  z-index:190;
+}
+
+.ticker-label {
+  flex-shrink:0;
+  height:100%;
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  background:var(--purple);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:2.5px;
+  color:#fff;
+  text-transform:uppercase;
+  white-space:nowrap;
+  z-index:2;
+}
+
+.ticker-track {
+  overflow:hidden;
+  flex:1;
+}
+
+.ticker-inner {
+  display:flex;
+  animation:scroll-left 80s linear infinite;
+  width:max-content;
+}
+
+.ticker-track:hover .ticker-inner { animation-play-state:paused; }
+
+@keyframes scroll-left {
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+
+.t-item {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:0 18px;
+  height:32px;
+  border-right:1px solid rgba(122,92,255,0.08);
+  white-space:nowrap;
+  cursor:default;
+}
+
+.t-item:hover { background:rgba(122,92,255,0.05); }
+
+.t-sym {
+  font-size:10px;
+  font-weight:700;
+  color:var(--grey);
+  letter-spacing:0.5px;
+}
+
+.t-price {
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:600;
+  color:var(--white);
+}
+
+.t-chg {
+  font-family:var(--mono);
+  font-size:10px;
+}
+
+.up { color:var(--green); }
+.dn { color:var(--red); }
+.nt { color:var(--grey); }
+
+/* ====== LAYOUT ====== */
+.grid-main {
+  display:grid;
+  grid-template-columns:310px 1fr 286px;
+  gap:10px;
+  padding:10px;
+  position:relative;
+  z-index:1;
+  min-height:calc(100vh - 88px);
+}
+
+.col { display:flex; flex-direction:column; gap:10px; }
+
+/* ====== PANEL ====== */
+.panel {
+  background:var(--panel);
+  border:1px solid var(--purple-line);
+  border-radius:7px;
+  overflow:hidden;
+  backdrop-filter:blur(6px);
+  position:relative;
+}
+
+.panel::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent 0%, rgba(122,92,255,0.4) 30%, rgba(122,92,255,0.6) 50%, rgba(122,92,255,0.4) 70%, transparent 100%);
+  pointer-events:none;
+}
+
+.ph {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:9px 13px;
+  border-bottom:1px solid rgba(122,92,255,0.1);
+  background:rgba(122,92,255,0.05);
+}
+
+.ph-left {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:2.5px;
+  color:var(--purple);
+  text-transform:uppercase;
+}
+
+.ph-dot {
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--purple);
+  box-shadow:0 0 5px var(--purple);
+}
+
+.ph-badge {
+  font-size:8px;
+  font-weight:700;
+  padding:2px 7px;
+  border-radius:3px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+.ph-badge-gold {
+  background:var(--gold-soft);
+  color:var(--gold);
+}
+
+/* ====== CRYPTO PANEL ====== */
+.crypto-list {
+  padding:9px 11px 5px;
+}
+
+.ca {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:9px 11px;
+  margin-bottom:5px;
+  background:rgba(11,24,40,0.6);
+  border:1px solid rgba(122,92,255,0.1);
+  border-radius:5px;
+  transition:border-color 0.2s, background 0.2s;
+  cursor:default;
+}
+
+.ca:hover { border-color:rgba(122,92,255,0.35); background:rgba(122,92,255,0.06); }
+.ca:last-child { margin-bottom:0; }
+
+.ca-left { display:flex; align-items:center; gap:9px; }
+
+.ca-icon {
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:800;
+  flex-shrink:0;
+  letter-spacing:-0.5px;
+}
+
+.ca-sym { font-size:12px; font-weight:700; color:var(--white); line-height:1; }
+.ca-name { font-size:9px; color:var(--grey); margin-top:2px; }
+
+.ca-vci {
+  text-align:center;
+  min-width:72px;
+}
+
+.vci-label {
+  font-size:8px;
+  color:var(--grey-2);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:3px;
+}
+
+.vci-val {
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:3px;
+}
+
+.vci-bar-bg {
+  width:64px;
+  height:3px;
+  background:rgba(138,155,176,0.18);
+  border-radius:2px;
+  margin:0 auto;
+  overflow:hidden;
+}
+
+.vci-bar-fill {
+  height:100%;
+  border-radius:2px;
+}
+
+.ca-right { text-align:right; }
+
+.ca-price {
+  font-family:var(--mono);
+  font-size:13px;
+  font-weight:600;
+  color:var(--white);
+}
+
+.ca-chg {
+  font-family:var(--mono);
+  font-size:10px;
+  margin-top:2px;
+}
+
+.crypto-footer {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  border-top:1px solid rgba(122,92,255,0.1);
+  margin-top:6px;
+}
+
+.cf-item {
+  padding:9px 11px;
+  border-right:1px solid rgba(122,92,255,0.1);
+}
+
+.cf-item:last-child { border-right:none; }
+
+.cf-label {
+  font-size:8px;
+  color:var(--grey-2);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:3px;
+}
+
+.cf-val {
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+}
+
+/* ====== FEAR & GREED ====== */
+.fg-wrap {
+  padding:14px 13px;
+}
+
+.fg-gauge-row {
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.fg-right { flex:1; }
+
+.fg-num {
+  font-family:var(--mono);
+  font-size:38px;
+  font-weight:800;
+  line-height:1;
+}
+
+.fg-state {
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  margin-top:4px;
+}
+
+.fg-meta {
+  margin-top:10px;
+  display:flex;
+  gap:10px;
+}
+
+.fg-meta-item {
+  flex:1;
+  background:rgba(11,24,40,0.6);
+  border:1px solid rgba(122,92,255,0.1);
+  border-radius:4px;
+  padding:7px 9px;
+}
+
+.fg-meta-label {
+  font-size:8px;
+  color:var(--grey-2);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:2px;
+}
+
+.fg-meta-val {
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+}
+
+/* ====== SESSION CLOCKS ====== */
+.sess-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  padding:10px 11px;
+}
+
+.sess-card {
+  background:rgba(11,24,40,0.6);
+  border:1px solid rgba(122,92,255,0.1);
+  border-radius:5px;
+  padding:9px 11px;
+  text-align:center;
+}
+
+.sess-card.active {
+  background:rgba(0,184,148,0.06);
+  border-color:rgba(0,184,148,0.35);
+}
+
+.sess-name {
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+
+.sess-time {
+  font-family:var(--mono);
+  font-size:14px;
+  font-weight:600;
+  color:var(--white);
+}
+
+.sess-status {
+  font-size:8px;
+  font-weight:700;
+  margin-top:3px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* ====== GLOBAL INDICES ====== */
+.indices-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+}
+
+.indices-col { }
+.indices-col + .indices-col { border-left:1px solid rgba(122,92,255,0.1); }
+
+.idx-section-hdr {
+  padding:6px 12px;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:2px;
+  color:var(--grey-2);
+  text-transform:uppercase;
+  background:rgba(0,0,0,0.15);
+  border-bottom:1px solid rgba(122,92,255,0.08);
+}
+
+.idx-row {
+  display:flex;
+  align-items:center;
+  padding:7px 12px;
+  border-bottom:1px solid rgba(122,92,255,0.06);
+  gap:4px;
+  transition:background 0.15s;
+  cursor:default;
+}
+
+.idx-row:hover { background:rgba(122,92,255,0.05); }
+.idx-row:last-child { border-bottom:none; }
+
+.idx-name {
+  font-size:11px;
+  font-weight:600;
+  color:var(--white);
+  flex:1;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.idx-price {
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--white);
+  text-align:right;
+}
+
+.idx-pct {
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  text-align:right;
+  min-width:54px;
+}
+
+/* ====== MACRO PANEL ====== */
+.macro-body {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+}
+
+.macro-left { padding:14px 14px; }
+.macro-right { padding:14px 14px; border-left:1px solid rgba(122,92,255,0.1); }
+
+.dxy-label {
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--grey-2);
+  text-transform:uppercase;
+  margin-bottom:5px;
+}
+
+.dxy-val {
+  font-family:var(--mono);
+  font-size:30px;
+  font-weight:800;
+  color:var(--white);
+  line-height:1;
+}
+
+.dxy-chg {
+  font-family:var(--mono);
+  font-size:12px;
+  margin-top:3px;
+}
+
+.yield-spread {
+  margin-top:14px;
+  padding:9px 11px;
+  background:rgba(255,140,50,0.08);
+  border:1px solid rgba(255,140,50,0.22);
+  border-radius:4px;
+}
+
+.ys-label {
+  font-size:8px;
+  color:rgba(255,140,50,0.7);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:3px;
+}
+
+.ys-val {
+  font-family:var(--mono);
+  font-size:18px;
+  font-weight:700;
+  color:var(--orange);
+}
+
+.ys-warn {
+  font-size:9px;
+  color:var(--orange);
+  margin-top:2px;
+  font-weight:600;
+}
+
+.rate-item {
+  margin-bottom:10px;
+}
+
+.rate-item:last-child { margin-bottom:0; }
+
+.rate-label {
+  font-size:8px;
+  color:var(--grey-2);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:2px;
+}
+
+.rate-val {
+  font-family:var(--mono);
+  font-size:15px;
+  font-weight:700;
+}
+
+.fomc-block {
+  margin-top:6px;
+  padding:8px 10px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-line);
+  border-radius:4px;
+}
+
+.fomc-label {
+  font-size:8px;
+  color:rgba(122,92,255,0.7);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:2px;
+}
+
+.fomc-date {
+  font-size:12px;
+  font-weight:700;
+  color:var(--purple);
+}
+
+.fomc-away {
+  font-size:9px;
+  color:var(--grey);
+  margin-top:1px;
+}
+
+.macro-stats {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  border-top:1px solid rgba(122,92,255,0.1);
+}
+
+.ms-item {
+  padding:9px 12px;
+  border-right:1px solid rgba(122,92,255,0.08);
+}
+
+.ms-item:last-child { border-right:none; }
+
+.ms-label {
+  font-size:8px;
+  color:var(--grey-2);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:3px;
+}
+
+.ms-val {
+  font-family:var(--mono);
+  font-size:16px;
+  font-weight:700;
+}
+
+.ms-prev {
+  font-size:9px;
+  color:var(--grey-2);
+  margin-top:2px;
+}
+
+/* ====== COMMODITIES + FX ====== */
+.tworow {
+  display:flex;
+  align-items:center;
+  padding:7px 12px;
+  border-bottom:1px solid rgba(122,92,255,0.06);
+  gap:4px;
+  cursor:default;
+  transition:background 0.15s;
+}
+
+.tworow:hover { background:rgba(122,92,255,0.04); }
+.tworow:last-child { border-bottom:none; }
+
+.tr-name {
+  font-size:11px;
+  font-weight:600;
+  color:var(--white);
+  flex:1;
+}
+
+.tr-price {
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--white);
+  min-width:70px;
+  text-align:right;
+}
+
+.tr-pct {
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  min-width:54px;
+  text-align:right;
+}
+
+.sec-divider {
+  padding:5px 12px;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:2px;
+  color:var(--grey-2);
+  text-transform:uppercase;
+  background:rgba(0,0,0,0.15);
+  border-bottom:1px solid rgba(122,92,255,0.08);
+  border-top:1px solid rgba(122,92,255,0.08);
+}
+
+/* ====== NEWS FEED ====== */
+.news-tabs {
+  display:flex;
+  background:rgba(0,0,0,0.15);
+  border-bottom:1px solid rgba(122,92,255,0.1);
+}
+
+.ntab {
+  flex:1;
+  padding:8px 6px;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:1.5px;
+  color:var(--grey-2);
+  text-align:center;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all 0.2s;
+  text-transform:uppercase;
+  user-select:none;
+}
+
+.ntab.active { color:var(--purple); border-bottom-color:var(--purple); background:rgba(122,92,255,0.05); }
+.ntab:hover { color:var(--white); }
+
+.news-scroll {
+  height:360px;
+  overflow-y:auto;
+}
+
+.news-scroll::-webkit-scrollbar { width:3px; }
+.news-scroll::-webkit-scrollbar-track { background:transparent; }
+.news-scroll::-webkit-scrollbar-thumb { background:rgba(122,92,255,0.3); border-radius:2px; }
+
+.n-item {
+  padding:10px 13px;
+  border-bottom:1px solid rgba(122,92,255,0.07);
+  cursor:pointer;
+  transition:background 0.15s;
+}
+
+.n-item:hover { background:rgba(122,92,255,0.05); }
+.n-item:last-child { border-bottom:none; }
+
+.n-top {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:4px;
+}
+
+.n-src {
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:1.5px;
+  color:var(--purple);
+  text-transform:uppercase;
+}
+
+.n-time {
+  font-family:var(--mono);
+  font-size:8px;
+  color:var(--grey-2);
+}
+
+.n-hl {
+  font-size:11px;
+  font-weight:500;
+  color:var(--white);
+  line-height:1.5;
+}
+
+.n-cat {
+  display:inline-block;
+  margin-top:5px;
+  padding:2px 7px;
+  border-radius:3px;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* ====== CALENDAR ====== */
+.cal-item {
+  display:flex;
+  gap:9px;
+  padding:9px 13px;
+  border-bottom:1px solid rgba(122,92,255,0.07);
+  align-items:flex-start;
+  transition:background 0.15s;
+  cursor:default;
+}
+
+.cal-item:hover { background:rgba(122,92,255,0.04); }
+.cal-item:last-child { border-bottom:none; }
+
+.cal-time {
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--grey-2);
+  min-width:42px;
+  padding-top:1px;
+}
+
+.cal-bar {
+  width:3px;
+  border-radius:2px;
+  min-height:18px;
+  align-self:stretch;
+  flex-shrink:0;
+}
+
+.cb-high { background:var(--red); box-shadow:0 0 5px rgba(255,59,59,0.5); }
+.cb-med { background:var(--orange); }
+.cb-low { background:var(--grey-2); }
+
+.cal-info { flex:1; }
+
+.cal-event {
+  font-size:11px;
+  font-weight:600;
+  color:var(--white);
+  line-height:1.3;
+}
+
+.cal-country {
+  font-size:9px;
+  color:var(--grey-2);
+  margin-top:2px;
+}
+
+.cal-fcast { text-align:right; flex-shrink:0; }
+
+.cal-prev {
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--grey-2);
+}
+
+.cal-exp {
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--purple);
+  font-weight:600;
+  margin-top:1px;
+}
+
+.cal-exp.high { color:var(--red); }
+
+/* ====== ALERT BANNER ====== */
+.alert-banner {
+  margin:0 10px 10px;
+  padding:9px 12px;
+  background:rgba(212,175,55,0.07);
+  border:1px solid rgba(212,175,55,0.22);
+  border-radius:5px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.alert-icon {
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:rgba(212,175,55,0.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:800;
+  color:var(--gold);
+  flex-shrink:0;
+}
+
+.alert-text {
+  font-size:10px;
+  color:rgba(212,175,55,0.9);
+  flex:1;
+  line-height:1.4;
+}
+
+.alert-text strong { font-weight:700; color:var(--gold); }
+
+.alert-countdown {
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  color:var(--gold);
+  flex-shrink:0;
+}
+
+/* ====== WATERMARK ====== */
+.watermark {
+  position:fixed;
+  bottom:10px;
+  right:14px;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:rgba(122,92,255,0.25);
+  text-transform:uppercase;
+  pointer-events:none;
+  z-index:100;
+}
+
+/* ====== CENTER LAYOUT ====== */
+.center-col { display:flex; flex-direction:column; gap:10px; }
+
+.c-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+.commodfx { display:flex; flex-direction:column; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-brand">
+    <svg class="hdr-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="18" fill="#080F1A"/>
+      <defs>
+        <radialGradient id="spk" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#9B80FF"/>
+          <stop offset="100%" stop-color="#5C3FCE"/>
+        </radialGradient>
+        <filter id="gl2"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g filter="url(#gl2)" stroke="url(#spk)" stroke-width="3.8" fill="none" stroke-linecap="round">
+        <circle cx="50" cy="50" r="29"/>
+        <circle cx="50" cy="50" r="8.5"/>
+        <line x1="50" y1="41.5" x2="50" y2="21"/>
+        <line x1="50" y1="58.5" x2="50" y2="79"/>
+        <line x1="41.5" y1="50" x2="21" y2="50"/>
+        <line x1="58.5" y1="50" x2="79" y2="50"/>
+        <line x1="43.9" y1="43.9" x2="29.4" y2="29.4"/>
+        <line x1="56.1" y1="56.1" x2="70.6" y2="70.6"/>
+        <line x1="56.1" y1="43.9" x2="70.6" y2="29.4"/>
+        <line x1="43.9" y1="56.1" x2="29.4" y2="70.6"/>
+      </g>
+    </svg>
+    <div class="hdr-text">
+      <div class="hdr-pillar">TMM Intelligence Pillar</div>
+      <div class="hdr-name">MACRO <em>TERMINAL</em></div>
+    </div>
+  </div>
+
+  <div class="hdr-center">
+    <div class="session-pill">
+      <div class="live-dot"></div>
+      ASIA SESSION ACTIVE
+    </div>
+    <div class="mkts">
+      <span class="mkt-badge mb-open">CRYPTO</span>
+      <span class="mkt-badge mb-open">ASX OPEN</span>
+      <span class="mkt-badge mb-closed">US CLOSED</span>
+      <span class="mkt-badge mb-pre">EU PRE-MKT</span>
+    </div>
+  </div>
+
+  <div class="hdr-right">
+    <div class="clock-block">
+      <div class="clock-row" style="gap:10px;">
+        <span class="clock-zone">AWST</span>
+        <span class="clock-time primary" id="awst"></span>
+        <span class="clock-zone" style="margin-left:4px;">UTC</span>
+        <span class="clock-time" id="utc"></span>
+      </div>
+    </div>
+    <div class="data-live">
+      <div class="blink-dot"></div>
+      LIVE
+    </div>
+  </div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-label">MARKET FEED</div>
+  <div class="ticker-track">
+    <div class="ticker-inner" id="ticker-inner"></div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="grid-main">
+
+  <!-- LEFT COLUMN -->
+  <div class="col">
+
+    <!-- CRYPTO COMMAND -->
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-dot"></div>CRYPTO COMMAND</div>
+        <span class="ph-badge">BYBIT PERPS</span>
+      </div>
+
+      <div class="crypto-list">
+
+        <!-- BTC -->
+        <div class="ca">
+          <div class="ca-left">
+            <div class="ca-icon" style="background:rgba(247,147,26,0.14);color:#F7931A;">BTC</div>
+            <div>
+              <div class="ca-sym">BTC/USDT</div>
+              <div class="ca-name">Bitcoin</div>
+            </div>
+          </div>
+          <div class="ca-vci">
+            <div class="vci-label">VCI</div>
+            <div class="vci-val" style="color:var(--green);">78</div>
+            <div class="vci-bar-bg"><div class="vci-bar-fill" style="width:78%;background:linear-gradient(90deg,#7A5CFF,#00B894);"></div></div>
+          </div>
+          <div class="ca-right">
+            <div class="ca-price">$83,420</div>
+            <div class="ca-chg up">+2.14%</div>
+          </div>
+        </div>
+
+        <!-- ETH -->
+        <div class="ca">
+          <div class="ca-left">
+            <div class="ca-icon" style="background:rgba(98,126,234,0.14);color:#627EEA;">ETH</div>
+            <div>
+              <div class="ca-sym">ETH/USDT</div>
+              <div class="ca-name">Ethereum</div>
+            </div>
+          </div>
+          <div class="ca-vci">
+            <div class="vci-label">VCI</div>
+            <div class="vci-val" style="color:var(--green);">61</div>
+            <div class="vci-bar-bg"><div class="vci-bar-fill" style="width:61%;background:linear-gradient(90deg,#7A5CFF,#00B894);"></div></div>
+          </div>
+          <div class="ca-right">
+            <div class="ca-price">$1,618</div>
+            <div class="ca-chg dn">-0.83%</div>
+          </div>
+        </div>
+
+        <!-- SOL -->
+        <div class="ca">
+          <div class="ca-left">
+            <div class="ca-icon" style="background:rgba(20,241,149,0.1);color:#14F195;">SOL</div>
+            <div>
+              <div class="ca-sym">SOL/USDT</div>
+              <div class="ca-name">Solana</div>
+            </div>
+          </div>
+          <div class="ca-vci">
+            <div class="vci-label">VCI</div>
+            <div class="vci-val" style="color:var(--orange);">52</div>
+            <div class="vci-bar-bg"><div class="vci-bar-fill" style="width:52%;background:linear-gradient(90deg,#7A5CFF,#FF8C32);"></div></div>
+          </div>
+          <div class="ca-right">
+            <div class="ca-price">$131.40</div>
+            <div class="ca-chg up">+1.22%</div>
+          </div>
+        </div>
+
+        <!-- HYPE -->
+        <div class="ca">
+          <div class="ca-left">
+            <div class="ca-icon" style="background:rgba(122,92,255,0.14);color:#7A5CFF;">HYP</div>
+            <div>
+              <div class="ca-sym">HYPE/USDT</div>
+              <div class="ca-name">Hyperliquid</div>
+            </div>
+          </div>
+          <div class="ca-vci">
+            <div class="vci-label">VCI</div>
+            <div class="vci-val" style="color:var(--red);">38</div>
+            <div class="vci-bar-bg"><div class="vci-bar-fill" style="width:38%;background:linear-gradient(90deg,#FF3B3B,#FF8C32);"></div></div>
+          </div>
+          <div class="ca-right">
+            <div class="ca-price">$14.82</div>
+            <div class="ca-chg dn">-3.41%</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="crypto-footer">
+        <div class="cf-item">
+          <div class="cf-label">Total Mkt Cap</div>
+          <div class="cf-val" style="color:var(--white);">$2.74T</div>
+        </div>
+        <div class="cf-item">
+          <div class="cf-label">BTC Dominance</div>
+          <div class="cf-val" style="color:var(--gold);">61.4%</div>
+        </div>
+        <div class="cf-item">
+          <div class="cf-label">24H Volume</div>
+          <div class="cf-val" style="color:var(--white);">$94.2B</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEAR & GREED -->
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-dot"></div>MARKET SENTIMENT</div>
+        <span class="ph-badge">CRYPTO F&amp;G INDEX</span>
+      </div>
+      <div class="fg-wrap">
+        <div class="fg-gauge-row">
+          <svg viewBox="0 0 160 90" width="160" height="90" style="flex-shrink:0;">
+            <defs>
+              <linearGradient id="fgg" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#FF3B3B"/>
+                <stop offset="28%" stop-color="#FF8C32"/>
+                <stop offset="50%" stop-color="#D4AF37"/>
+                <stop offset="72%" stop-color="#7A5CFF"/>
+                <stop offset="100%" stop-color="#00B894"/>
+              </linearGradient>
+              <filter id="gf2"><feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#7A5CFF" flood-opacity="0.8"/></filter>
+            </defs>
+            <path d="M16 85 A64 64 0 0 1 144 85" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10" stroke-linecap="round"/>
+            <path d="M16 85 A64 64 0 0 1 144 85" fill="none" stroke="url(#fgg)" stroke-width="10" stroke-linecap="round"/>
+            <!-- needle at ~72 -->
+            <line x1="80" y1="85" x2="116" y2="26" stroke="#7A5CFF" stroke-width="2.5" stroke-linecap="round" filter="url(#gf2)"/>
+            <circle cx="80" cy="85" r="5" fill="#7A5CFF" filter="url(#gf2)"/>
+            <text x="10" y="92" font-size="7" fill="#FF3B3B" font-family="Montserrat" font-weight="800">FEAR</text>
+            <text x="118" y="92" font-size="7" fill="#00B894" font-family="Montserrat" font-weight="800">GREED</text>
+          </svg>
+          <div class="fg-right">
+            <div class="fg-num" style="color:#7A5CFF;">72</div>
+            <div class="fg-state" style="color:#7A5CFF;">GREED</div>
+          </div>
+        </div>
+        <div class="fg-meta">
+          <div class="fg-meta-item">
+            <div class="fg-meta-label">Yesterday</div>
+            <div class="fg-meta-val" style="color:var(--purple);">68</div>
+          </div>
+          <div class="fg-meta-item">
+            <div class="fg-meta-label">7D Avg</div>
+            <div class="fg-meta-val" style="color:var(--purple);">65</div>
+          </div>
+          <div class="fg-meta-item">
+            <div class="fg-meta-label">1M Avg</div>
+            <div class="fg-meta-val" style="color:var(--orange);">54</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSIONS -->
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-dot"></div>TRADING SESSIONS</div>
+        <span class="ph-badge">LIVE CLOCK</span>
+      </div>
+      <div class="sess-grid">
+        <div class="sess-card active">
+          <div class="sess-name" style="color:var(--green);">ASIA / TOKYO</div>
+          <div class="sess-time" id="s-asia">09:42</div>
+          <div class="sess-status up">OPEN</div>
+        </div>
+        <div class="sess-card">
+          <div class="sess-name" style="color:var(--grey);">LONDON</div>
+          <div class="sess-time" id="s-london">01:42</div>
+          <div class="sess-status nt">PRE-MARKET</div>
+        </div>
+        <div class="sess-card">
+          <div class="sess-name" style="color:var(--grey);">NEW YORK</div>
+          <div class="sess-time" id="s-ny">20:42</div>
+          <div class="sess-status nt">CLOSED</div>
+        </div>
+        <div class="sess-card active">
+          <div class="sess-name" style="color:var(--green);">SYDNEY</div>
+          <div class="sess-time" id="s-sydney">11:42</div>
+          <div class="sess-status up">OPEN</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /left col -->
+
+  <!-- CENTER COLUMN -->
+  <div class="center-col">
+
+    <!-- GLOBAL INDICES -->
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-dot"></div>GLOBAL INDICES</div>
+        <span class="ph-badge">15-MIN DELAY</span>
+      </div>
+      <div class="indices-grid">
+        <div class="indices-col">
+          <div class="idx-section-hdr">&#127482;&#127480; United States</div>
+          <div class="idx-row"><span class="idx-name">S&amp;P 500</span><span class="idx-price">5,204.34</span><span class="idx-pct up">+0.38%</span></div>
+          <div class="idx-row"><span class="idx-name">NASDAQ</span><span class="idx-price">16,142.10</span><span class="idx-pct up">+0.64%</span></div>
+          <div class="idx-row"><span class="idx-name">DOW JONES</span><span class="idx-price">38,904.50</span><span class="idx-pct dn">-0.12%</span></div>
+          <div class="idx-row"><span class="idx-name">VIX</span><span class="idx-price">18.42</span><span class="idx-pct" style="color:var(--red);">+2.80%</span></div>
+        </div>
+        <div class="indices-col">
+          <div class="idx-section-hdr">&#127758; Asia Pacific</div>
+          <div class="idx-row"><span class="idx-name">ASX 200</span><span class="idx-price">7,824.60</span><span class="idx-pct up">+0.52%</span></div>
+          <div class="idx-row"><span class="idx-name">NIKKEI 225</span><span class="idx-price">34,812.30</span><span class="idx-pct dn">-0.44%</span></div>
+          <div class="idx-row"><span class="idx-name">HANG SENG</span><span class="idx-price">22,318.90</span><span class="idx-pct up">+1.14%</span></div>
+          <div class="idx-row"><span class="idx-name">CSI 300</span><span class="idx-price">3,948.20</span><span class="idx-pct up">+0.31%</span></div>
+        </div>
+        <div class="indices-col">
+          <div class="idx-section-hdr">&#127466;&#127482; Europe</div>
+          <div class="idx-row"><span class="idx-name">FTSE 100</span><span class="idx-price">8,204.80</span><span class="idx-pct up">+0.22%</span></div>
+          <div class="idx-row"><span class="idx-name">DAX 40</span><span class="idx-price">21,842.40</span><span class="idx-pct dn">-0.18%</span></div>
+          <div class="idx-row"><span class="idx-name">CAC 40</span><span class="idx-price">7,628.10</span><span class="idx-pct dn">-0.09%</span></div>
+          <div class="idx-row"><span class="idx-name">STOXX 50</span><span class="idx-price">5,012.30</span><span class="idx-pct nt">0.00%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACRO + COMMODITIES/FX ROW -->
+    <div class="c-row">
+
+      <!-- MACRO INTELLIGENCE -->
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-left"><div class="ph-dot"></div>MACRO INTELLIGENCE</div>
+          <span class="ph-badge">FRED + LIVE</span>
+        </div>
+        <div class="macro-body">
+          <div class="macro-left">
+            <div class="dxy-label">US Dollar Index (DXY)</div>
+            <div class="dxy-val">103.84</div>
+            <div class="dxy-chg dn">-0.32% today</div>
+            <div class="yield-spread">
+              <div class="ys-label">Yield Spread 2Y vs 10Y</div>
+              <div class="ys-val">-0.18%</div>
+              <div class="ys-warn">INVERTED - Recession Watch</div>
+            </div>
+          </div>
+          <div class="macro-right">
+            <div class="rate-item">
+              <div class="rate-label">Fed Funds Rate</div>
+              <div class="rate-val" style="color:var(--gold);">5.25%</div>
+            </div>
+            <div class="rate-item">
+              <div class="rate-label">2Y Treasury Yield</div>
+              <div class="rate-val" style="color:var(--white);">4.84%</div>
+            </div>
+            <div class="rate-item">
+              <div class="rate-label">10Y Treasury Yield</div>
+              <div class="rate-val" style="color:var(--white);">4.66%</div>
+            </div>
+            <div class="fomc-block">
+              <div class="fomc-label">Next FOMC Meeting</div>
+              <div class="fomc-date">MAY 7, 2026</div>
+              <div class="fomc-away">25 days away</div>
+            </div>
+          </div>
+        </div>
+        <div class="macro-stats">
+          <div class="ms-item">
+            <div class="ms-label">CPI YoY</div>
+            <div class="ms-val" style="color:var(--orange);">3.2%</div>
+            <div class="ms-prev">Prev: 3.4%</div>
+          </div>
+          <div class="ms-item">
+            <div class="ms-label">M2 Money Supply</div>
+            <div class="ms-val" style="color:var(--green);">$21.6T</div>
+            <div class="ms-prev" style="color:var(--green);">+1.8% YoY</div>
+          </div>
+          <div class="ms-item">
+            <div class="ms-label">Unemployment</div>
+            <div class="ms-val" style="color:var(--white);">4.1%</div>
+            <div class="ms-prev">Prev: 4.0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMMODITIES + FX -->
+      <div class="panel commodfx">
+        <div class="ph">
+          <div class="ph-left"><div class="ph-dot"></div>COMMODITIES + FX</div>
+          <span class="ph-badge">SPOT PRICE</span>
+        </div>
+
+        <div class="sec-divider">Commodities</div>
+        <div class="tworow"><span class="tr-name">Gold (XAU)</span><span class="tr-price">$3,248.40</span><span class="tr-pct up">+0.84%</span></div>
+        <div class="tworow"><span class="tr-name">Silver (XAG)</span><span class="tr-price">$33.14</span><span class="tr-pct up">+1.02%</span></div>
+        <div class="tworow"><span class="tr-name">WTI Crude</span><span class="tr-price">$74.82</span><span class="tr-pct dn">-0.61%</span></div>
+        <div class="tworow"><span class="tr-name">Brent Crude</span><span class="tr-price">$78.44</span><span class="tr-pct dn">-0.55%</span></div>
+        <div class="tworow"><span class="tr-name">Copper</span><span class="tr-price">$4.84</span><span class="tr-pct up">+0.33%</span></div>
+        <div class="tworow"><span class="tr-name">Natural Gas</span><span class="tr-price">$2.14</span><span class="tr-pct up">+1.88%</span></div>
+
+        <div class="sec-divider">FX Crosses</div>
+        <div class="tworow"><span class="tr-name">AUD/USD</span><span class="tr-price">0.6312</span><span class="tr-pct up">+0.28%</span></div>
+        <div class="tworow"><span class="tr-name">USD/JPY</span><span class="tr-price">144.82</span><span class="tr-pct up">+0.14%</span></div>
+        <div class="tworow"><span class="tr-name">EUR/USD</span><span class="tr-price">1.0864</span><span class="tr-pct dn">-0.09%</span></div>
+        <div class="tworow"><span class="tr-name">GBP/USD</span><span class="tr-price">1.2742</span><span class="tr-pct dn">-0.12%</span></div>
+      </div>
+
+    </div><!-- /c-row -->
+
+    <!-- ALERT BANNER -->
+    <div class="alert-banner">
+      <div class="alert-icon">!</div>
+      <div class="alert-text">
+        <strong>HIGH IMPACT EVENT:</strong> Fed Chair Powell speaks at 02:00 AWST. Watch BTC, DXY and Gold for volatility spikes around the release.
+      </div>
+      <div class="alert-countdown">-16:26</div>
+    </div>
+
+  </div><!-- /center col -->
+
+  <!-- RIGHT COLUMN -->
+  <div class="col">
+
+    <!-- NEWS FEED -->
+    <div class="panel" style="flex:1;">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-dot"></div>INTELLIGENCE FEED</div>
+        <span class="ph-badge">AUTO-REFRESH</span>
+      </div>
+      <div class="news-tabs">
+        <div class="ntab active" onclick="switchTab(this,'all')">ALL</div>
+        <div class="ntab" onclick="switchTab(this,'crypto')">CRYPTO</div>
+        <div class="ntab" onclick="switchTab(this,'macro')">MACRO</div>
+        <div class="ntab" onclick="switchTab(this,'eqty')">EQUITIES</div>
+      </div>
+      <div class="news-scroll" id="news-feed"></div>
+    </div>
+
+    <!-- ECONOMIC CALENDAR -->
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-dot"></div>ECONOMIC CALENDAR</div>
+        <span class="ph-badge">TODAY - AWST</span>
+      </div>
+
+      <div class="cal-item">
+        <div class="cal-time">02:00</div>
+        <div class="cal-bar cb-high"></div>
+        <div class="cal-info">
+          <div class="cal-event">Fed Chair Powell Speech</div>
+          <div class="cal-country">&#127482;&#127480; United States</div>
+        </div>
+        <div class="cal-fcast">
+          <div class="cal-exp high">HIGH IMPACT</div>
+        </div>
+      </div>
+
+      <div class="cal-item">
+        <div class="cal-time">10:30</div>
+        <div class="cal-bar cb-med"></div>
+        <div class="cal-info">
+          <div class="cal-event">AU Employment Change</div>
+          <div class="cal-country">&#127462;&#127482; Australia</div>
+        </div>
+        <div class="cal-fcast">
+          <div class="cal-prev">Prev: 25.2K</div>
+          <div class="cal-exp">Exp: 20.0K</div>
+        </div>
+      </div>
+
+      <div class="cal-item">
+        <div class="cal-time">11:00</div>
+        <div class="cal-bar cb-low"></div>
+        <div class="cal-info">
+          <div class="cal-event">JP Industrial Production</div>
+          <div class="cal-country">&#127471;&#127477; Japan</div>
+        </div>
+        <div class="cal-fcast">
+          <div class="cal-prev">Prev: -0.2%</div>
+          <div class="cal-exp">Exp: +0.4%</div>
+        </div>
+      </div>
+
+      <div class="cal-item">
+        <div class="cal-time">14:00</div>
+        <div class="cal-bar cb-high"></div>
+        <div class="cal-info">
+          <div class="cal-event">US CPI Inflation Report</div>
+          <div class="cal-country">&#127482;&#127480; United States</div>
+        </div>
+        <div class="cal-fcast">
+          <div class="cal-prev">Prev: 3.2%</div>
+          <div class="cal-exp">Exp: 3.1%</div>
+        </div>
+      </div>
+
+      <div class="cal-item">
+        <div class="cal-time">20:30</div>
+        <div class="cal-bar cb-med"></div>
+        <div class="cal-info">
+          <div class="cal-event">ECB Meeting Minutes</div>
+          <div class="cal-country">&#127466;&#127482; Europe</div>
+        </div>
+        <div class="cal-fcast">
+          <div class="cal-exp">MED IMPACT</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /right col -->
+
+</div><!-- /grid-main -->
+
+<div class="watermark">TMM MACRO TERMINAL v1.0 &nbsp;|&nbsp; TRADE MANAGEMENT MASTERY</div>
+
+<script>
+const TICKER_DATA = [
+  {s:'BTC/USDT',p:'$83,420',c:'+2.14%',u:1},
+  {s:'ETH/USDT',p:'$1,618',c:'-0.83%',u:0},
+  {s:'SOL/USDT',p:'$131.40',c:'+1.22%',u:1},
+  {s:'HYPE/USDT',p:'$14.82',c:'-3.41%',u:0},
+  {s:'S&P 500',p:'5,204',c:'+0.38%',u:1},
+  {s:'NASDAQ',p:'16,142',c:'+0.64%',u:1},
+  {s:'ASX 200',p:'7,824',c:'+0.52%',u:1},
+  {s:'NIKKEI',p:'34,812',c:'-0.44%',u:0},
+  {s:'DXY',p:'103.84',c:'-0.32%',u:0},
+  {s:'GOLD',p:'$3,248',c:'+0.84%',u:1},
+  {s:'WTI OIL',p:'$74.82',c:'-0.61%',u:0},
+  {s:'AUD/USD',p:'0.6312',c:'+0.28%',u:1},
+  {s:'USD/JPY',p:'144.82',c:'+0.14%',u:1},
+  {s:'EUR/USD',p:'1.0864',c:'-0.09%',u:0},
+  {s:'VIX',p:'18.42',c:'+2.80%',u:0},
+  {s:'SILVER',p:'$33.14',c:'+1.02%',u:1},
+  {s:'COPPER',p:'$4.84',c:'+0.33%',u:1},
+  {s:'BTC DOM',p:'61.4%',c:'+0.4%',u:1},
+  {s:'F&G',p:'72',c:'GREED',u:1},
+];
+
+function buildTicker(items){
+  return items.map(t=>`<div class="t-item"><span class="t-sym">${t.s}</span><span class="t-price">${t.p}</span><span class="t-chg ${t.u?'up':'dn'}">${t.u?'&#9650;':'&#9660;'} ${t.c}</span></div>`).join('');
+}
+const ti = document.getElementById('ticker-inner');
+ti.innerHTML = buildTicker(TICKER_DATA) + buildTicker(TICKER_DATA);
+
+function fmt(d,tz){
+  return new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);
+}
+function fmt5(d,tz){
+  const s = fmt(d,tz);
+  return s.substring(0,5);
+}
+
+function tick(){
+  const now = new Date();
+  const awst = fmt(now,'Australia/Perth');
+  const utc = now.toISOString().substring(11,19);
+  document.getElementById('awst').textContent = awst;
+  document.getElementById('utc').textContent = utc;
+  document.getElementById('s-asia').textContent = fmt5(now,'Asia/Tokyo');
+  document.getElementById('s-london').textContent = fmt5(now,'Europe/London');
+  document.getElementById('s-ny').textContent = fmt5(now,'America/New_York');
+  document.getElementById('s-sydney').textContent = fmt5(now,'Australia/Sydney');
+}
+setInterval(tick,1000);
+tick();
+
+const NEWS = [
+  {src:'REUTERS',time:'9:14',hl:'Bitcoin surges past $83K as institutional inflows reach monthly highs',cat:'CRYPTO',cc:'#7A5CFF'},
+  {src:'BLOOMBERG',time:'8:52',hl:'Fed Chair Powell signals data-dependent approach amid sticky inflation readings',cat:'MACRO',cc:'#D4AF37'},
+  {src:'COINDESK',time:'8:31',hl:'Ethereum spot ETF net inflows turn positive for first time in three weeks',cat:'CRYPTO',cc:'#7A5CFF'},
+  {src:'FT',time:'8:10',hl:'Asian equities mixed as Hang Seng outperforms on renewed China stimulus expectations',cat:'EQUITIES',cc:'#2F6BFF'},
+  {src:'CNBC',time:'7:44',hl:'Gold hits fresh all-time high as macro uncertainty drives safe-haven demand',cat:'MACRO',cc:'#D4AF37'},
+  {src:'DECRYPT',time:'7:22',hl:'Hyperliquid records peak perpetuals volume as DeFi derivatives activity surges',cat:'CRYPTO',cc:'#7A5CFF'},
+  {src:'WSJ',time:'6:58',hl:'Treasury yield curve remains inverted; recession watch indicators stay elevated',cat:'MACRO',cc:'#D4AF37'},
+  {src:'REUTERS',time:'6:30',hl:'ASX 200 opens higher tracking Wall Street gains overnight; miners sector leads advance',cat:'EQUITIES',cc:'#2F6BFF'},
+  {src:'COINTELE',time:'6:01',hl:'Solana ecosystem TVL climbs 12% as DeFi activity expands across major protocols',cat:'CRYPTO',cc:'#7A5CFF'},
+  {src:'AFR',time:'5:44',hl:'RBA holds rates steady; governor signals further patience required on inflation path',cat:'MACRO',cc:'#D4AF37'},
+];
+
+function renderNews(items){
+  return items.map(n=>`
+    <div class="n-item">
+      <div class="n-top">
+        <span class="n-src">${n.src}</span>
+        <span class="n-time">${n.time} AWST</span>
+      </div>
+      <div class="n-hl">${n.hl}</div>
+      <span class="n-cat" style="background:${n.cc}18;color:${n.cc};">${n.cat}</span>
+    </div>
+  `).join('');
+}
+
+function switchTab(el,cat){
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const map = {
+    all: NEWS,
+    crypto: NEWS.filter(n=>n.cat==='CRYPTO'),
+    macro: NEWS.filter(n=>n.cat==='MACRO'),
+    eqty: NEWS.filter(n=>n.cat==='EQUITIES'),
+  };
+  document.getElementById('news-feed').innerHTML = renderNews(map[cat]||NEWS);
+}
+
+document.getElementById('news-feed').innerHTML = renderNews(NEWS);
+</script>
+
+</body>
+</html>
