@@ -2,7 +2,7 @@ import os
 import threading
 import time
 from datetime import datetime, timezone
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -13,7 +13,7 @@ CORS(app)
 
 # Import all fetchers
 from fetchers.coingecko import get_prices, get_global, get_fear_and_greed
-from fetchers.bybit import get_funding_rates
+from fetchers.bybit import get_funding_rates, get_market_structure
 from fetchers.yahoo import get_indices, get_commodities, get_fx
 from fetchers.fred import get_macro
 from fetchers.finnhub import get_all_news, get_session_status
@@ -34,7 +34,6 @@ def fetch_crypto():
     if prices['status'] != 'ok':
         return prices
 
-    # Merge funding rates into price data
     for symbol in prices['data']:
         prices['data'][symbol]['funding_rate'] = funding['data'].get(symbol, {}).get('rate', None)
 
@@ -48,10 +47,17 @@ def fetch_crypto():
     }
 
 
+def fetch_market_structure():
+    return get_market_structure()
+
+
 # ============================================================
 # HEALTH CHECK
 # ============================================================
 
+@app.route('/')
+def index():
+    return send_from_directory('static', 'index.html')
 @app.route('/health')
 def health():
     return jsonify({
@@ -172,6 +178,8 @@ def all_data():
     sessions = get_session_status()
     alert = get_next_high_impact()
 
+    market_structure = get_or_fetch('market_structure', fetch_market_structure)
+
     return jsonify({
         'status': 'ok',
         'timestamp': datetime.now(timezone.utc).isoformat(),
@@ -185,6 +193,7 @@ def all_data():
             'calendar': calendar['data'],
             'sessions': sessions['data'],
             'alert': alert,
+            'market_structure': market_structure['data'],
         }
     })
 
@@ -255,6 +264,11 @@ def prewarm_cache():
             if result['status'] == 'ok':
                 write_cache('calendar', result['data'])
 
+            print('[PreWarm] Refreshing market structure cache...')
+            result = get_market_structure()
+            if result['status'] == 'ok':
+                write_cache('market_structure', result['data'])
+            
             print('[PreWarm] Cache refresh complete. Sleeping 60s...')
             time.sleep(60)
 

@@ -1,189 +1,176 @@
+import requests
+import os
 from datetime import datetime, timezone, timedelta
+from dotenv import load_dotenv
 
+load_dotenv()
 
-# ============================================================
-# US-FOCUSED ECONOMIC CALENDAR 2026
-# Events that move crypto + risk assets
-# NFP, CPI, FOMC, PPI, GDP, PCE, ISM, Retail Sales
-# ============================================================
-
-CALENDAR_2026 = [
-
-    # ---- APRIL ----
-    {'date': '2026-04-14', 'time_utc': '01:30', 'event': 'AU Employment Change', 'country': 'AU', 'impact': 'medium'},
-    {'date': '2026-04-16', 'time_utc': '12:30', 'event': 'US Retail Sales MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-04-16', 'time_utc': '13:15', 'event': 'US Industrial Production', 'country': 'US', 'impact': 'medium'},
-    {'date': '2026-04-17', 'time_utc': '12:30', 'event': 'US Initial Jobless Claims', 'country': 'US', 'impact': 'medium'},
-    {'date': '2026-04-17', 'time_utc': '14:00', 'event': 'US Philadelphia Fed Index', 'country': 'US', 'impact': 'medium'},
-    {'date': '2026-04-23', 'time_utc': '13:45', 'event': 'US S&P Global PMI Flash', 'country': 'US', 'impact': 'medium'},
-    {'date': '2026-04-24', 'time_utc': '12:30', 'event': 'US GDP Growth Rate QoQ Flash', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-04-24', 'time_utc': '12:30', 'event': 'US Core PCE Price Index QoQ', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-04-24', 'time_utc': '12:30', 'event': 'US Initial Jobless Claims', 'country': 'US', 'impact': 'medium'},
-    {'date': '2026-04-30', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-04-30', 'time_utc': '14:00', 'event': 'US Consumer Confidence', 'country': 'US', 'impact': 'medium'},
-
-    # ---- MAY ----
-    {'date': '2026-05-01', 'time_utc': '14:00', 'event': 'US ISM Manufacturing PMI', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-02', 'time_utc': '12:30', 'event': 'US Non-Farm Payrolls', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-02', 'time_utc': '12:30', 'event': 'US Unemployment Rate', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-07', 'time_utc': '18:00', 'event': 'FOMC Rate Decision', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-07', 'time_utc': '18:30', 'event': 'Fed Chair Powell Press Conference', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-13', 'time_utc': '12:30', 'event': 'US CPI Inflation MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-13', 'time_utc': '12:30', 'event': 'US Core CPI MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-14', 'time_utc': '12:30', 'event': 'US PPI Final Demand MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-15', 'time_utc': '12:30', 'event': 'US Retail Sales MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-15', 'time_utc': '12:30', 'event': 'US Initial Jobless Claims', 'country': 'US', 'impact': 'medium'},
-    {'date': '2026-05-21', 'time_utc': '13:45', 'event': 'US S&P Global PMI Flash', 'country': 'US', 'impact': 'medium'},
-    {'date': '2026-05-28', 'time_utc': '12:30', 'event': 'US GDP Growth Rate QoQ Second', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-05-29', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-
-    # ---- JUNE ----
-    {'date': '2026-06-01', 'time_utc': '14:00', 'event': 'US ISM Manufacturing PMI', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-06-05', 'time_utc': '12:30', 'event': 'US Non-Farm Payrolls', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-06-05', 'time_utc': '12:30', 'event': 'US Unemployment Rate', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-06-11', 'time_utc': '12:30', 'event': 'US CPI Inflation MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-06-11', 'time_utc': '12:30', 'event': 'US Core CPI MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-06-17', 'time_utc': '18:00', 'event': 'FOMC Rate Decision', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-06-17', 'time_utc': '18:30', 'event': 'Fed Chair Powell Press Conference', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-06-25', 'time_utc': '12:30', 'event': 'US GDP Growth Rate QoQ Third', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-06-26', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-
-    # ---- JULY ----
-    {'date': '2026-07-01', 'time_utc': '14:00', 'event': 'US ISM Manufacturing PMI', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-07-02', 'time_utc': '12:30', 'event': 'US Non-Farm Payrolls', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-07-02', 'time_utc': '12:30', 'event': 'US Unemployment Rate', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-07-09', 'time_utc': '12:30', 'event': 'US CPI Inflation MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-07-09', 'time_utc': '12:30', 'event': 'US Core CPI MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-07-29', 'time_utc': '18:00', 'event': 'FOMC Rate Decision', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-07-29', 'time_utc': '18:30', 'event': 'Fed Chair Powell Press Conference', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-07-30', 'time_utc': '12:30', 'event': 'US GDP Growth Rate QoQ Advance', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-07-31', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-
-    # ---- AUGUST ----
-    {'date': '2026-08-03', 'time_utc': '14:00', 'event': 'US ISM Manufacturing PMI', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-08-07', 'time_utc': '12:30', 'event': 'US Non-Farm Payrolls', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-08-07', 'time_utc': '12:30', 'event': 'US Unemployment Rate', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-08-13', 'time_utc': '12:30', 'event': 'US CPI Inflation MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-08-13', 'time_utc': '12:30', 'event': 'US Core CPI MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-08-14', 'time_utc': '12:30', 'event': 'US PPI Final Demand MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-08-28', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-
-    # ---- SEPTEMBER ----
-    {'date': '2026-09-01', 'time_utc': '14:00', 'event': 'US ISM Manufacturing PMI', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-09-04', 'time_utc': '12:30', 'event': 'US Non-Farm Payrolls', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-09-04', 'time_utc': '12:30', 'event': 'US Unemployment Rate', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-09-10', 'time_utc': '12:30', 'event': 'US CPI Inflation MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-09-10', 'time_utc': '12:30', 'event': 'US Core CPI MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-09-16', 'time_utc': '18:00', 'event': 'FOMC Rate Decision', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-09-16', 'time_utc': '18:30', 'event': 'Fed Chair Powell Press Conference', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-09-25', 'time_utc': '12:30', 'event': 'US GDP Growth Rate QoQ Third', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-09-26', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-
-    # ---- OCTOBER ----
-    {'date': '2026-10-01', 'time_utc': '14:00', 'event': 'US ISM Manufacturing PMI', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-10-02', 'time_utc': '12:30', 'event': 'US Non-Farm Payrolls', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-10-02', 'time_utc': '12:30', 'event': 'US Unemployment Rate', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-10-08', 'time_utc': '12:30', 'event': 'US CPI Inflation MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-10-08', 'time_utc': '12:30', 'event': 'US Core CPI MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-10-28', 'time_utc': '18:00', 'event': 'FOMC Rate Decision', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-10-28', 'time_utc': '18:30', 'event': 'Fed Chair Powell Press Conference', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-10-29', 'time_utc': '12:30', 'event': 'US GDP Growth Rate QoQ Advance', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-10-30', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-
-    # ---- NOVEMBER ----
-    {'date': '2026-11-02', 'time_utc': '14:00', 'event': 'US ISM Manufacturing PMI', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-11-06', 'time_utc': '12:30', 'event': 'US Non-Farm Payrolls', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-11-06', 'time_utc': '12:30', 'event': 'US Unemployment Rate', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-11-12', 'time_utc': '12:30', 'event': 'US CPI Inflation MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-11-12', 'time_utc': '12:30', 'event': 'US Core CPI MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-11-13', 'time_utc': '12:30', 'event': 'US PPI Final Demand MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-11-25', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-
-    # ---- DECEMBER ----
-    {'date': '2026-12-01', 'time_utc': '14:00', 'event': 'US ISM Manufacturing PMI', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-12-04', 'time_utc': '12:30', 'event': 'US Non-Farm Payrolls', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-12-04', 'time_utc': '12:30', 'event': 'US Unemployment Rate', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-12-09', 'time_utc': '12:30', 'event': 'US CPI Inflation MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-12-09', 'time_utc': '12:30', 'event': 'US Core CPI MoM', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-12-09', 'time_utc': '19:00', 'event': 'FOMC Rate Decision', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-12-09', 'time_utc': '19:30', 'event': 'Fed Chair Powell Press Conference', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-12-18', 'time_utc': '12:30', 'event': 'US GDP Growth Rate QoQ Third', 'country': 'US', 'impact': 'high'},
-    {'date': '2026-12-23', 'time_utc': '12:30', 'event': 'US Core PCE Price Index MoM', 'country': 'US', 'impact': 'high'},
-]
+FINNHUB_KEY = os.getenv('FINNHUB_KEY')
+BASE_URL = 'https://finnhub.io/api/v1/calendar/economic'
 
 
 def get_calendar(days_ahead=7):
     """
-    Return upcoming economic events for the next N days
-    Times converted to AWST for display
+    Fetch economic calendar from Finnhub API
+    Filters for US high and medium impact events
+    Converts times to AWST (UTC+8)
     """
-    now_utc = datetime.now(timezone.utc)
-    cutoff = now_utc + timedelta(days=days_ahead)
-    upcoming = []
+    try:
+        now_utc = datetime.now(timezone.utc)
+        start = now_utc.strftime('%Y-%m-%d')
+        end = (now_utc + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
 
-    for event in CALENDAR_2026:
-        event_dt_str = f'{event["date"]} {event["time_utc"]}'
-        event_dt_utc = datetime.strptime(event_dt_str, '%Y-%m-%d %H:%M').replace(tzinfo=timezone.utc)
+        print(f'[Calendar] Fetching from Finnhub ({start} to {end})...')
 
-        if now_utc <= event_dt_utc <= cutoff:
+        params = {
+            'token': FINNHUB_KEY,
+            'from': start,
+            'to': end,
+        }
+
+        response = requests.get(BASE_URL, params=params, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+
+        events = data.get('economicCalendar', [])
+
+        if not events:
+            print(f'[Calendar] No events returned from Finnhub')
+            return {'status': 'ok', 'data': [], 'timestamp': datetime.now(timezone.utc).isoformat()}
+
+        # High impact keywords - things that move crypto and risk assets
+        HIGH_IMPACT_KEYWORDS = [
+            'Non-Farm', 'NFP', 'CPI', 'Federal Funds', 'FOMC', 'Fed Chair',
+            'Powell', 'GDP', 'PCE', 'PPI', 'Unemployment Rate', 'Retail Sales',
+            'ISM Manufacturing', 'ISM Services', 'Consumer Price',
+            'Producer Price', 'Payroll', 'Interest Rate'
+        ]
+
+        MEDIUM_IMPACT_KEYWORDS = [
+            'Jobless Claims', 'Consumer Confidence', 'Industrial Production',
+            'Philadelphia Fed', 'PMI', 'Building Permits', 'Housing Starts',
+            'Durable Goods', 'Trade Balance', 'Consumer Sentiment',
+            'ADP Employment', 'Retail', 'Michigan'
+        ]
+
+        upcoming = []
+
+        for event in events:
+            # Only US events
+            country = event.get('country', '')
+            if country != 'US':
+                continue
+
+            event_name = event.get('event', '')
+            impact = 'low'
+
+            # Determine impact by keyword matching
+            if any(kw.lower() in event_name.lower() for kw in HIGH_IMPACT_KEYWORDS):
+                impact = 'high'
+            elif any(kw.lower() in event_name.lower() for kw in MEDIUM_IMPACT_KEYWORDS):
+                impact = 'medium'
+            else:
+                continue  # Skip low impact events
+
+            # Parse datetime
+            event_date = event.get('time', '')
+            if not event_date:
+                continue
+
+            try:
+                # Finnhub returns time as full datetime string
+                event_dt_utc = datetime.strptime(event_date, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+            except Exception:
+                try:
+                    event_dt_utc = datetime.strptime(event_date[:10], '%Y-%m-%d').replace(tzinfo=timezone.utc)
+                except Exception:
+                    continue
+
+            # Skip past events
+            if event_dt_utc < now_utc:
+                continue
+
+            # Convert to AWST
             event_dt_awst = event_dt_utc + timedelta(hours=8)
+
+            # Countdown
             delta = event_dt_utc - now_utc
             hours_away = int(delta.total_seconds() // 3600)
             minutes_away = int((delta.total_seconds() % 3600) // 60)
+            countdown = f'{hours_away}h {minutes_away}m' if hours_away < 48 else f'{int(hours_away/24)}d'
 
             upcoming.append({
-                'event': event['event'],
-                'country': event['country'],
-                'impact': event['impact'],
-                'date_utc': event['date'],
-                'time_utc': event['time_utc'],
+                'event': event_name,
+                'country': 'US',
+                'impact': impact,
+                'date_utc': event_dt_utc.strftime('%Y-%m-%d'),
+                'time_utc': event_dt_utc.strftime('%H:%M'),
                 'time_awst': event_dt_awst.strftime('%H:%M'),
                 'date_awst': event_dt_awst.strftime('%d %b'),
                 'hours_away': hours_away,
                 'minutes_away': minutes_away,
-                'countdown': f'{hours_away}h {minutes_away}m' if hours_away < 48 else f'{int(hours_away/24)}d',
+                'countdown': countdown,
+                'actual': event.get('actual', ''),
+                'forecast': event.get('estimate', ''),
+                'previous': event.get('prev', ''),
             })
 
-    upcoming.sort(key=lambda x: x['date_utc'] + ' ' + x['time_utc'])
-    print(f'[Calendar] Found {len(upcoming)} events in next {days_ahead} days')
-    return {
-        'status': 'ok',
-        'data': upcoming,
-        'timestamp': datetime.now(timezone.utc).isoformat()
-    }
+        # Sort by datetime
+        upcoming.sort(key=lambda x: x['date_utc'] + ' ' + x['time_utc'])
+
+        print(f'[Calendar] Found {len(upcoming)} US events in next {days_ahead} days')
+        return {
+            'status': 'ok',
+            'data': upcoming,
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        }
+
+    except Exception as e:
+        print(f'[Calendar] ERROR - {e}')
+        return {'status': 'error', 'error': str(e), 'data': []}
 
 
 def get_next_high_impact():
     """
     Find the next high impact event within 24 hours for the alert banner
     """
-    now_utc = datetime.now(timezone.utc)
-    cutoff = now_utc + timedelta(hours=24)
+    try:
+        result = get_calendar(days_ahead=2)
+        if result['status'] != 'ok':
+            return {'found': False}
 
-    for event in CALENDAR_2026:
-        event_dt_str = f'{event["date"]} {event["time_utc"]}'
-        event_dt_utc = datetime.strptime(event_dt_str, '%Y-%m-%d %H:%M').replace(tzinfo=timezone.utc)
+        for event in result['data']:
+            if event['impact'] == 'high':
+                return {
+                    'found': True,
+                    'event': event['event'],
+                    'country': 'US',
+                    'time_awst': event['time_awst'] + ' AWST',
+                    'countdown': event['countdown'],
+                }
 
-        if event['impact'] == 'high' and now_utc <= event_dt_utc <= cutoff:
-            event_dt_awst = event_dt_utc + timedelta(hours=8)
-            delta = event_dt_utc - now_utc
-            hours_away = int(delta.total_seconds() // 3600)
-            minutes_away = int((delta.total_seconds() % 3600) // 60)
-            return {
-                'found': True,
-                'event': event['event'],
-                'country': event['country'],
-                'time_awst': event_dt_awst.strftime('%H:%M AWST'),
-                'countdown': f'{hours_away}h {minutes_away}m',
-            }
+        return {'found': False}
 
-    return {'found': False}
+    except Exception as e:
+        print(f'[Calendar] get_next_high_impact ERROR - {e}')
+        return {'found': False}
 
 
 # Quick test
 if __name__ == '__main__':
-    print('Testing calendar...')
-    cal = get_calendar(30)
+    print('Testing Finnhub calendar...')
+    print()
+
+    cal = get_calendar(7)
     print(f'Status: {cal["status"]}')
+    print(f'Events found: {len(cal["data"])}')
     for e in cal['data'][:10]:
         print(f'  [{e["impact"].upper()}] {e["date_awst"]} {e["time_awst"]} AWST - {e["event"]} - in {e["countdown"]}')
+    print()
+
+    print('--- NEXT HIGH IMPACT ---')
+    alert = get_next_high_impact()
+    if alert['found']:
+        print(f'  {alert["event"]} at {alert["time_awst"]} - in {alert["countdown"]}')
+    else:
+        print('  None in next 24 hours')
