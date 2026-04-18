@@ -1,0 +1,18 @@
+[Unit]
+Description=TMM TradingView Access Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=tmm
+WorkingDirectory=/home/tmm/tmm-tv-gateway
+EnvironmentFile=/home/tmm/tmm-tv-gateway/.env
+ExecStart=/home/tmm/tmm-tv-gateway/venv/bin/python main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tmm-tv-gateway
+
+[Install]
+WantedBy=multi-user.target
